@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "420985514128",
+    "project_id": "warehouseinventory-app",
+    "storage_bucket": "warehouseinventory-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:420985514128:android:d08ed97da752539d089015",
+        "android_client_info": {
+          "package_name": "com.sizllle.warehouseinventory"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAxsR5oi3ORNdEl_uBVJ4WmX-isF5agEMg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
