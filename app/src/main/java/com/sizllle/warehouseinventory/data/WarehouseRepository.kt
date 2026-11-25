@@ -20,14 +20,6 @@ class WarehouseRepository(
 ) {
     private val productsCollection = firestore.collection("products")
 
-    init {
-        // Включаем оффлайн-кеш Firestore для работы на складе при слабом интернете
-        val settings = FirebaseFirestoreSettings.Builder()
-            .setLocalCacheSettings(PersistentCacheSettings.newBuilder().build())
-            .build()
-        firestore.firestoreSettings = settings
-    }
-
     private fun buildKeywords(
         boxCode: String,
         detailCode: String,

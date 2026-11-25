@@ -1,0 +1,202 @@
+Я переписал MainActivity, потому-что import androidx.compose.material.icons.Icons не работал.
+
+package com.sizllle.warehouseinventory
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import com.sizllle.warehouseinventory.data.WarehouseRepository
+import com.sizllle.warehouseinventory.ui.AddProductScreen
+import com.sizllle.warehouseinventory.ui.OrdersScreen
+import com.sizllle.warehouseinventory.ui.WarehouseScreen
+import com.sizllle.warehouseinventory.R
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        val repository = WarehouseRepository()
+
+        setContent {
+            MaterialTheme {
+                var selectedTab by remember { mutableIntStateOf(0) }
+                var refreshCounter by remember { mutableIntStateOf(0) }
+
+                Scaffold(
+                    bottomBar = {
+                        NavigationBar {
+                            NavigationBarItem(
+                                selected = selectedTab == 0,
+                                onClick = {
+                                    selectedTab = 0
+                                    refreshCounter++
+                                },
+                                icon = { Icon(painterResource(id = R.drawable.ic_search),
+                                    contentDescription = null) },
+                                label = { Text("Склад") }
+                            )
+                            NavigationBarItem(
+                                selected = selectedTab == 1,
+                                onClick = { selectedTab = 1 },
+                                icon = { Icon(painterResource(id = R.drawable.ic_add),
+                                    contentDescription = null) },
+                                label = { Text("Добавить") }
+                            )
+                            NavigationBarItem(
+                                selected = selectedTab == 2,
+                                onClick = {
+                                    selectedTab = 2
+                                    refreshCounter++
+                                },
+                                icon = { Icon(painterResource(id = R.drawable.ic_shopping_cart),
+                                    contentDescription = null) },
+                                label = { Text("Закупки") }
+                            )
+                        }
+                    }
+                ) { innerPadding ->
+                    Box(modifier = Modifier.padding(innerPadding)) {
+                        when (selectedTab) {
+                            0 -> WarehouseScreen(
+                                repository = repository,
+                                refreshTrigger = refreshCounter
+                            )
+                            1 -> AddProductScreen(
+                                repository = repository,
+                                onProductAdded = { refreshCounter++ }
+                            )
+                            2 -> OrdersScreen(
+                                repository = repository,
+                                refreshTrigger = refreshCounter
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+Приложение не запускается. Логи при запуске Android Studio:
+2026-11-26 01:31:56.756  5211-5260  Finsky                  com.android.vending                  E  [58] ItemStore: getItems RPC failed for item com.sizllle.warehouseinventory
+2026-11-26 01:32:05.030  5642-5642  TransactionExecutor     pid-5642                             E  Failed to execute the transaction: tId:1659540581 ClientTransaction{
+                                                                                                    tId:1659540581   transactionItems=[
+                                                                                                    tId:1659540581     LaunchActivityItem{activityToken=android.os.BinderProxy@821dbaa,intent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10000000 xflg=0x4 cmp=com.sizllle.warehouseinventory/.MainActivity },ident=128812158,info=ActivityInfo{d73ce80 com.sizllle.warehouseinventory.MainActivity},curConfig={1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h914dp 420dpi nrml long compactNeeded port finger qwerty/v/v dpad/v winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2400) mMaxBounds=Rect(0, 0 - 1080, 2400) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} as.2 s.38 fontWeightAdjustment=0},overrideConfig={1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h914dp 420dpi nrml long compactNeeded port finger qwerty/v/v dpad/v winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2400) mMaxBounds=Rect(0, 0 - 1080, 2400) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mActivityType=standard mAlwaysOnTop=undefined mRotation=ROTATION_0} as.2 s.2 fontWeightAdjustment=0},deviceId=0,referrer=com.android.shell,procState=2,state=null,persistentState=null,pendingResults=null,pendingNewIntents=null,sceneTransitionInfo=null,profilerInfo=null,assistToken=android.os.BinderProxy@82821bd,shareableActivityToken=android.os.BinderProxy@88c23b2,activityWindowInfo=ActivityWindowInfo{isEmbedded=false, taskBounds=Rect(0, 0 - 1080, 2400), taskFragmentBounds=Rect(0, 0 - 1080, 2400)},displayId=0}
+                                                                                                    tId:1659540581     ResumeActivityItem{mActivityToken=android.os.BinderProxy@821dbaa,procState=-1,isForward=true,shouldSendCompatFakeFocus=false}
+                                                                                                    tId:1659540581     Target activity: com.sizllle.warehouseinventory.MainActivity
+                                                                                                    tId:1659540581   ]
+                                                                                                    tId:1659540581 }
+2026-11-26 01:32:05.033  5642-5642  AndroidRuntime          pid-5642                             E  FATAL EXCEPTION: main (Fix with AI)
+                                                                                                    Process: com.sizllle.warehouseinventory, PID: 5642
+                                                                                                    java.lang.RuntimeException: Unable to start activity ComponentInfo{com.sizllle.warehouseinventory/com.sizllle.warehouseinventory.MainActivity}
+                                                                                                    	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:4575)
+                                                                                                    	at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:4781)
+                                                                                                    	at android.app.servertransaction.LaunchActivityItem.execute(LaunchActivityItem.java:224)
+                                                                                                    	at android.app.servertransaction.TransactionExecutor.executeNonLifecycleItem(TransactionExecutor.java:133)
+                                                                                                    	at android.app.servertransaction.TransactionExecutor.executeTransactionItems(TransactionExecutor.java:103)
+                                                                                                    	at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:80)
+                                                                                                    	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:3032)
+                                                                                                    	at android.os.Handler.dispatchMessageImpl(Handler.java:142)
+                                                                                                    	at android.os.Handler.dispatchMessage(Handler.java:125)
+                                                                                                    	at android.os.Looper.loopOnce(Looper.java:296)
+                                                                                                    	at android.os.Looper.loop(Looper.java:397)
+                                                                                                    	at android.app.ActivityThread.main(ActivityThread.java:9523)
+                                                                                                    	at java.lang.reflect.Method.invoke(Native Method)
+                                                                                                    	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:575)
+                                                                                                    	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:939)
+                                                                                                    Caused by: java.lang.IllegalStateException: FirebaseFirestore has already been started and its settings can no longer be changed. You can only call setFirestoreSettings() before calling any other methods on a FirebaseFirestore object.
+                                                                                                    	at com.google.firebase.firestore.FirebaseFirestore.setFirestoreSettings(FirebaseFirestore.java:264)
+                                                                                                    	at com.sizllle.warehouseinventory.data.WarehouseRepository.<init>(WarehouseRepository.kt:28)
+                                                                                                    	at com.sizllle.warehouseinventory.data.WarehouseRepository.<init>(WarehouseRepository.kt:18)
+                                                                                                    	at com.sizllle.warehouseinventory.MainActivity.onCreate(MainActivity.kt:30)
+                                                                                                    	at android.app.Activity.performCreate(Activity.java:9340)
+                                                                                                    	at android.app.Activity.performCreate(Activity.java:9318)
+                                                                                                    	at android.app.Instrumentation.callActivityOnCreate(Instrumentation.java:1543)
+                                                                                                    	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:4559)
+                                                                                                    	... 14 more
+2026-11-26 01:32:05.483   667-1014  WindowOrga...Controller system_server                        E  Attempting to externally change a non-organized container: Task{ab3fddf #13 type=standard A=10235:com.sizllle.warehouseinventory}={handlePackageUpdate:false,} playercount=2 taskorg=android.window.ITaskOrganizer$Stub$Proxy@798e241
+
+Логи при запуске приложения:
+---------------------------- PROCESS STARTED (6322) for package com.sizllle.warehouseinventory ----------------------------
+2026-11-26 01:35:57.962  6322-6322  nativeloader            com.sizllle.warehouseinventory       D  Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
+2026-11-26 01:35:58.002  6322-6322  nativeloader            com.sizllle.warehouseinventory       D  Load /data/user/0/com.sizllle.warehouseinventory/code_cache/startup_agents/a413e612-agent.so using system ns (caller=<unknown>): ok
+2026-11-26 01:35:57.995  6322-6322  re-initialized>         com.sizllle.warehouseinventory       W  type=1400 audit(0.0:38): avc:  granted  { execute } for  path="/data/data/com.sizllle.warehouseinventory/code_cache/startup_agents/a413e612-agent.so" dev="dm-6" ino=566121 scontext=u:r:untrusted_app:s0:c235,c256,c512,c768 tcontext=u:object_r:app_data_file:s0:c235,c256,c512,c768 tclass=file app=com.sizllle.warehouseinventory
+2026-11-26 01:35:58.007  6322-6322  ehouseinventory         com.sizllle.warehouseinventory       W  hiddenapi: DexFile /data/data/com.sizllle.warehouseinventory/code_cache/.studio/instruments-09818231.jar is in boot class path but is not in a known location
+2026-11-26 01:35:58.066  6322-6322  ehouseinventory         com.sizllle.warehouseinventory       W  Redefining intrinsic method java.lang.Thread java.lang.Thread.currentThread(). This may cause the unexpected use of the original definition of java.lang.Thread java.lang.Thread.currentThread()in methods that have already been compiled.
+2026-11-26 01:35:58.068  6322-6322  ehouseinventory         com.sizllle.warehouseinventory       W  Redefining intrinsic method boolean java.lang.Thread.interrupted(). This may cause the unexpected use of the original definition of boolean java.lang.Thread.interrupted()in methods that have already been compiled.
+2026-11-26 01:35:58.083  6322-6322  CompatChangeReporter    com.sizllle.warehouseinventory       D  Compat change id reported: 333566037; UID 10235; state: ENABLED
+2026-11-26 01:35:58.092  6322-6322  ApplicationLoaders      com.sizllle.warehouseinventory       D  Returning zygote-cached class loader: /system_ext/framework/androidx.window.extensions.jar
+2026-11-26 01:35:58.092  6322-6322  ApplicationLoaders      com.sizllle.warehouseinventory       D  Returning zygote-cached class loader: /system_ext/framework/androidx.window.sidecar.jar
+2026-11-26 01:35:58.320  6322-6322  nativeloader            com.sizllle.warehouseinventory       D  Configuring clns-9 for other apk /data/app/~~bVLFuVsu5iLRqEJeNLJQhg==/com.sizllle.warehouseinventory-8xI7N0tHF8ZKzqdXJfnLXg==/base.apk. target_sdk_version=37, uses_libraries=, library_path=/data/app/~~bVLFuVsu5iLRqEJeNLJQhg==/com.sizllle.warehouseinventory-8xI7N0tHF8ZKzqdXJfnLXg==/lib/x86_64:/data/app/~~bVLFuVsu5iLRqEJeNLJQhg==/com.sizllle.warehouseinventory-8xI7N0tHF8ZKzqdXJfnLXg==/base.apk!/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/com.sizllle.warehouseinventory
+2026-11-26 01:35:58.331  6322-6322  GraphicsEnvironment     com.sizllle.warehouseinventory       V  Currently set values for:
+2026-11-26 01:35:58.331  6322-6322  GraphicsEnvironment     com.sizllle.warehouseinventory       V    angle_gl_driver_selection_pkgs=[]
+2026-11-26 01:35:58.331  6322-6322  GraphicsEnvironment     com.sizllle.warehouseinventory       V    angle_gl_driver_selection_values=[]
+2026-11-26 01:35:58.331  6322-6322  GraphicsEnvironment     com.sizllle.warehouseinventory       V  com.sizllle.warehouseinventory is not listed in per-application setting
+2026-11-26 01:35:58.331  6322-6322  GraphicsEnvironment     com.sizllle.warehouseinventory       V  No special selections for ANGLE, returning default driver choice
+2026-11-26 01:35:58.332  6322-6322  GraphicsEnvironment     com.sizllle.warehouseinventory       V  Neither updatable production driver nor prerelease driver is supported.
+2026-11-26 01:35:58.336  6322-6322  CompatChangeReporter    com.sizllle.warehouseinventory       D  Compat change id reported: 407952621; UID 10235; state: ENABLED
+2026-11-26 01:35:58.336  6322-6322  CompatChangeReporter    com.sizllle.warehouseinventory       D  Compat change id reported: 419020719; UID 10235; state: ENABLED
+2026-11-26 01:35:58.353  6322-6322  FirebaseApp             com.sizllle.warehouseinventory       I  Device unlocked: initializing all Firebase APIs for app [DEFAULT]
+2026-11-26 01:35:58.357  6322-6322  FirebaseInitProvider    com.sizllle.warehouseinventory       I  FirebaseApp initialization successful
+2026-11-26 01:35:58.377  6322-6322  CompatChangeReporter    com.sizllle.warehouseinventory       D  Compat change id reported: 458413887; UID 10235; state: ENABLED
+2026-11-26 01:35:58.379  6322-6336  DisplayManager          com.sizllle.warehouseinventory       I  Choreographer implicitly registered for the refresh rate.
+2026-11-26 01:35:58.395  6322-6322  DesktopExperienceFlags  com.sizllle.warehouseinventory       D  Toggle override initialized to: false
+2026-11-26 01:35:58.428  6322-6336  GFXSTREAM               com.sizllle.warehouseinventory       I  [eglDisplay.cpp(297)] Opening libGLESv1_CM_emulation.so
+2026-11-26 01:35:58.429  6322-6336  GFXSTREAM               com.sizllle.warehouseinventory       I  [eglDisplay.cpp(297)] Opening libGLESv2_emulation.so
+2026-11-26 01:35:58.517  6322-6336  libc                    com.sizllle.warehouseinventory       W  Access denied finding property "vendor.mesa.virtgpu.kumquat"
+2026-11-26 01:35:58.522  6322-6336  HWUI                    com.sizllle.warehouseinventory       W  Failed to choose config with EGL_SWAP_BEHAVIOR_PRESERVED, retrying without...
+2026-11-26 01:35:58.522  6322-6336  HWUI                    com.sizllle.warehouseinventory       W  Failed to initialize 101010-2 format, error = EGL_SUCCESS
+2026-11-26 01:35:58.531  6322-6322  CompatChangeReporter    com.sizllle.warehouseinventory       D  Compat change id reported: 418924588; UID 10235; state: ENABLED
+2026-11-26 01:35:58.538  6322-6322  TransactionExecutor     com.sizllle.warehouseinventory       E  Failed to execute the transaction: tId:1281081865 ClientTransaction{
+                                                                                                    tId:1281081865   transactionItems=[
+                                                                                                    tId:1281081865     LaunchActivityItem{activityToken=android.os.BinderProxy@821dbaa,intent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10000000 xflg=0x4 cmp=com.sizllle.warehouseinventory/.MainActivity },ident=259701993,info=ActivityInfo{4379f03 com.sizllle.warehouseinventory.MainActivity},curConfig={1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h914dp 420dpi nrml long compactNeeded port finger qwerty/v/v dpad/v winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2400) mMaxBounds=Rect(0, 0 - 1080, 2400) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} as.2 s.39 fontWeightAdjustment=0},overrideConfig={1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h914dp 420dpi nrml long compactNeeded port finger qwerty/v/v dpad/v winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2400) mMaxBounds=Rect(0, 0 - 1080, 2400) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mActivityType=standard mAlwaysOnTop=undefined mRotation=ROTATION_0} as.2 s.2 fontWeightAdjustment=0},deviceId=0,referrer=com.android.shell,procState=2,state=null,persistentState=null,pendingResults=null,pendingNewIntents=null,sceneTransitionInfo=null,profilerInfo=null,assistToken=android.os.BinderProxy@2da7514,shareableActivityToken=android.os.BinderProxy@82821bd,activityWindowInfo=ActivityWindowInfo{isEmbedded=false, taskBounds=Rect(0, 0 - 1080, 2400), taskFragmentBounds=Rect(0, 0 - 1080, 2400)},displayId=0}
+                                                                                                    tId:1281081865     ResumeActivityItem{mActivityToken=android.os.BinderProxy@821dbaa,procState=-1,isForward=true,shouldSendCompatFakeFocus=false}
+                                                                                                    tId:1281081865     Target activity: com.sizllle.warehouseinventory.MainActivity
+                                                                                                    tId:1281081865   ]
+                                                                                                    tId:1281081865 }
+2026-11-26 01:35:58.539  6322-6322  AndroidRuntime          com.sizllle.warehouseinventory       D  Shutting down VM
+2026-11-26 01:35:58.544  6322-6322  AndroidRuntime          com.sizllle.warehouseinventory       E  FATAL EXCEPTION: main (Fix with AI)
+                                                                                                    Process: com.sizllle.warehouseinventory, PID: 6322
+                                                                                                    java.lang.RuntimeException: Unable to start activity ComponentInfo{com.sizllle.warehouseinventory/com.sizllle.warehouseinventory.MainActivity}
+                                                                                                    	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:4575)
+                                                                                                    	at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:4781)
+                                                                                                    	at android.app.servertransaction.LaunchActivityItem.execute(LaunchActivityItem.java:224)
+                                                                                                    	at android.app.servertransaction.TransactionExecutor.executeNonLifecycleItem(TransactionExecutor.java:133)
+                                                                                                    	at android.app.servertransaction.TransactionExecutor.executeTransactionItems(TransactionExecutor.java:103)
+                                                                                                    	at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:80)
+                                                                                                    	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:3032)
+                                                                                                    	at android.os.Handler.dispatchMessageImpl(Handler.java:142)
+                                                                                                    	at android.os.Handler.dispatchMessage(Handler.java:125)
+                                                                                                    	at android.os.Looper.loopOnce(Looper.java:296)
+                                                                                                    	at android.os.Looper.loop(Looper.java:397)
+                                                                                                    	at android.app.ActivityThread.main(ActivityThread.java:9523)
+                                                                                                    	at java.lang.reflect.Method.invoke(Native Method)
+                                                                                                    	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:575)
+                                                                                                    	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:939)
+                                                                                                    Caused by: java.lang.IllegalStateException: FirebaseFirestore has already been started and its settings can no longer be changed. You can only call setFirestoreSettings() before calling any other methods on a FirebaseFirestore object.
+                                                                                                    	at com.google.firebase.firestore.FirebaseFirestore.setFirestoreSettings(FirebaseFirestore.java:264)
+                                                                                                    	at com.sizllle.warehouseinventory.data.WarehouseRepository.<init>(WarehouseRepository.kt:28)
+                                                                                                    	at com.sizllle.warehouseinventory.data.WarehouseRepository.<init>(WarehouseRepository.kt:18)
+                                                                                                    	at com.sizllle.warehouseinventory.MainActivity.onCreate(MainActivity.kt:30)
+                                                                                                    	at android.app.Activity.performCreate(Activity.java:9340)
+                                                                                                    	at android.app.Activity.performCreate(Activity.java:9318)
+                                                                                                    	at android.app.Instrumentation.callActivityOnCreate(Instrumentation.java:1543)
+                                                                                                    	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:4559)
+                                                                                                    	... 14 more
+2026-11-26 01:35:58.566  6322-6322  Process                 com.sizllle.warehouseinventory       I  Sending signal. PID: 6322 SIG: 9
+---------------------------- PROCESS ENDED (6322) for package com.sizllle.warehouseinventory ----------------------------
+2026-11-26 01:35:59.068   667-2147  WindowOrga...Controller system_server                        E  Attempting to externally change a non-organized container: Task{2079d6e #14 type=standard A=10235:com.sizllle.warehouseinventory}={handlePackageUpdate:false,} playercount=2 taskorg=android.window.ITaskOrganizer$Stub$Proxy@798e241
