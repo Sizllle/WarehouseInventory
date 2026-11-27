@@ -16,9 +16,16 @@ enum class SearchField(val label: String) {
 }
 
 class WarehouseRepository(
-    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+    firestore: FirebaseFirestore? = null
 ) {
-    private val productsCollection = firestore.collection("products")
+    private val firestore: FirebaseFirestore? = firestore ?: try {
+        FirebaseFirestore.getInstance()
+    } catch (_: Exception) {
+        null
+    }
+
+    private val productsCollection
+        get() = firestore?.collection("products")
 
     private fun buildKeywords(
         boxCode: String,
@@ -48,7 +55,8 @@ class WarehouseRepository(
             }
 
             val cleanCarBrand = if (carBrand == "Не указано") "" else carBrand.trim()
-            val docRef = productsCollection.document()
+            val collection = productsCollection ?: return Result.failure(IllegalStateException("Firestore не доступен"))
+            val docRef = collection.document()
 
             val data = hashMapOf(
                 "boxCode" to cleanBoxCode,
@@ -78,7 +86,8 @@ class WarehouseRepository(
         searchField: SearchField = SearchField.ALL
     ): Result<List<Product>> {
         return try {
-            val snapshot = productsCollection
+            val collection = productsCollection ?: return Result.success(emptyList())
+            val snapshot = collection
                 .whereEqualTo("status", Product.STATUS_IN_STOCK)
                 .get()
                 .await()
@@ -126,7 +135,8 @@ class WarehouseRepository(
 
     suspend fun markAsUsed(productId: String): Result<Unit> {
         return try {
-            productsCollection.document(productId)
+            val collection = productsCollection ?: return Result.failure(IllegalStateException("Firestore не доступен"))
+            collection.document(productId)
                 .update("status", Product.STATUS_TO_ORDER)
                 .await()
             Result.success(Unit)
@@ -137,7 +147,8 @@ class WarehouseRepository(
 
     suspend fun getToOrderProducts(): Result<List<Product>> {
         return try {
-            val snapshot = productsCollection
+            val collection = productsCollection ?: return Result.success(emptyList())
+            val snapshot = collection
                 .whereEqualTo("status", Product.STATUS_TO_ORDER)
                 .get()
                 .await()
@@ -164,13 +175,16 @@ class WarehouseRepository(
 
     suspend fun markAsOrderedByBoxCode(boxCode: String): Result<Unit> {
         return try {
-            val snapshot = productsCollection
+            val collection = productsCollection ?: return Result.failure(IllegalStateException("Firestore не доступен"))
+            val db = firestore ?: return Result.failure(IllegalStateException("Firestore не доступен"))
+
+            val snapshot = collection
                 .whereEqualTo("status", Product.STATUS_TO_ORDER)
                 .whereEqualTo("boxCode", boxCode)
                 .get()
                 .await()
 
-            val batch = firestore.batch()
+            val batch = db.batch()
             for (doc in snapshot.documents) {
                 batch.delete(doc.reference)
             }
